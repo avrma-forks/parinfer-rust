@@ -25,19 +25,34 @@ endif
 
 if !exists('g:parinfer_dylib_path')
   let s:libdir = expand('<sfile>:p:h:h') . '/target/release'
-  if has('macunix')
-    let g:parinfer_dylib_path = s:libdir . '/libparinfer_rust.dylib'
-  elseif has('unix')
-    let s:uname = system("uname")
-    if s:uname == "Darwin\n"
+  " Detecting OS to know the extension of the dynamic library.
+  " Easy on Neovim
+  if has('nvim')
+    if has('mac')
       let g:parinfer_dylib_path = s:libdir . '/libparinfer_rust.dylib'
-    else
+    elseif has('unix')
       let g:parinfer_dylib_path = s:libdir . '/libparinfer_rust.so'
+    elseif has('win32')
+      let g:parinfer_dylib_path = s:libdir . '/libparinfer_rust.dll'
+    else
+      " I hope we don't come here!
     endif
-  elseif has('win32')
-    let g:parinfer_dylib_path = s:libdir . '/parinfer_rust.dll'
   else
-    " I hope we don't come here!
+    " Harder with Vim so we shell out to uname <https://vi.stackexchange.com/a/2577>
+    if has('macunix')
+      let g:parinfer_dylib_path = s:libdir . '/libparinfer_rust.dylib'
+    elseif has('unix')
+      let s:uname = system("uname")
+      if s:uname ==# "Darwin\n"
+        let g:parinfer_dylib_path = s:libdir . '/libparinfer_rust.dylib'
+      else
+        let g:parinfer_dylib_path = s:libdir . '/libparinfer_rust.so'
+      endif
+    elseif has('win32')
+      let g:parinfer_dylib_path = s:libdir . '/parinfer_rust.dll'
+    else
+      " I hope we don't come here!
+    endif
   endif
 endif
 
